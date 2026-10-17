@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080b12">
+<title>Nexus DNS — iPhone Configuration</title>
+<style>
+:root{color-scheme:dark;--bg:#080b12;--panel:#111722;--border:#283448;--accent:#69e4ff;--muted:#9aa8bc}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at top,#142337 0,#080b12 55%);color:#f2f6ff;font:15px/1.5 system-ui,-apple-system,sans-serif}
+header{padding:22px 18px;border-bottom:1px solid var(--border);background:#080b12dd;position:sticky;top:0;backdrop-filter:blur(14px);z-index:2}
+.logo{font-weight:850;font-size:21px;letter-spacing:.06em}.logo span{color:var(--accent)}
+header p,.muted,small{color:var(--muted)}
+main{max-width:760px;margin:auto;padding:20px 16px 40px}
+h1{font-size:clamp(25px,6vw,36px);line-height:1.1;margin:12px 0}
+h2{font-size:18px;margin:0 0 8px}
+.panel{background:#111722eF;border:1px solid var(--border);border-radius:18px;padding:18px;margin:16px 0;box-shadow:0 14px 40px #0003}
+label{display:block;font-weight:650;margin:14px 0 7px}
+select,input{width:100%;padding:12px;border-radius:11px;background:#090e17;color:#f2f6ff;border:1px solid var(--border);font:inherit}
+button,.button{display:inline-flex;justify-content:center;align-items:center;text-align:center;text-decoration:none;background:#1a2738;color:white;border:1px solid var(--border);border-radius:11px;padding:12px 14px;font:inherit;font-weight:700;cursor:pointer}
+button.primary{background:var(--accent);color:#061018;border-color:var(--accent)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.full{width:100%;margin-top:14px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.tile{padding:13px;border:1px solid var(--border);border-radius:12px;background:#0b111c}
+.tile b{color:var(--accent)}
+.notice{border-left:3px solid var(--accent);padding:10px 12px;background:#0b1723;border-radius:7px}
+.status{white-space:pre-wrap;overflow-wrap:anywhere;background:#080e17;border:1px solid var(--border);padding:12px;border-radius:11px;margin-top:12px}
+ol{padding-left:22px}li{margin:8px 0}
+footer{text-align:center;color:var(--muted);padding:20px}
+@media(max-width:420px){.grid{grid-template-columns:1fr}.panel{padding:15px}}
+</style>
+</head>
+<body>
+<header><div class="logo">NEXUS <span>DNS</span></div><p style="margin:4px 0 0">iPhone encrypted DNS profile builder</p></header>
+<main>
+  <h1>Configure DNS on iPhone</h1>
+  <p class="muted">Create a signed-by-you local configuration profile for Cloudflare DNS-over-HTTPS. Nothing is installed until you download and approve the profile in iOS Settings.</p>
+
+  <section class="panel">
+    <h2>Profile settings</h2>
+    <label for="mode">Cloudflare resolver</label>
+    <select id="mode">
+      <option value="standard">Cloudflare — standard DNS (no category filtering)</option>
+      <option value="security">Cloudflare for Families — block malware</option>
+      <option value="family">Cloudflare for Families — block malware and adult content</option>
+    </select>
+    <label for="label">Profile display name</label>
+    <input id="label" maxlength="50" value="Nexus DNS - Cloudflare">
+    <button class="primary full" id="generate">Generate .mobileconfig profile</button>
+    <div id="status" class="status" aria-live="polite">Ready. Choose a resolver and generate your profile.</div>
+  </section>
+
+  <section class="panel">
+    <h2>Install on iPhone</h2>
+    <ol>
+      <li>Host this HTML page on a trusted HTTPS website, then open it in Safari on the iPhone.</li>
+      <li>Tap <b>Generate .mobileconfig profile</b> and allow the download.</li>
+      <li>Open iPhone <b>Settings</b>. If prompted, open <b>Profile Downloaded</b>; otherwise go to <b>General → VPN & Device Management</b>.</li>
+      <li>Review the profile details and install it only if you recognize the Cloudflare endpoint and want these DNS settings.</li>
+      <li>To remove it later, go to <b>Settings → General → VPN & Device Management</b>, select the profile, and remove it.</li>
+    </ol>
+    <div class="notice"><b>Important:</b> A downloaded profile is not the same as an installed profile. iOS may show different menu wording depending on its version. If the profile is rejected, don't bypass the warning; use Cloudflare's official 1.1.1.1 app or manual Wi-Fi DNS configuration instead.</div>
+  </section>
+
+  <section class="panel">
+    <h2>What's actually configured?</h2>
+    <div class="grid">
+      <div class="tile"><b>Encrypted DNS</b><p class="muted">Queries use HTTPS to reach Cloudflare.</p></div>
+      <div class="tile"><b>System-level profile</b><p class="muted">Designed for iOS DNS settings, not just this webpage.</p></div>
+      <div class="tile"><b>No silent changes</b><p class="muted">You must download and approve the profile.</p></div>
+      <div class="tile"><b>No VPN tunnel</b><p class="muted">This profile configures DNS only; it does not route all web traffic through a VPN.</p></div>
+    </div>
+    <p class="muted">A normal bookmark alone cannot change DNS. DNS configuration profiles are supported only on compatible iOS versions and may be affected by device management policies, other VPN/DNS apps, and network restrictions.</p>
+    <p><a href="https://developers.cloudflare.com/1.1.1.1/setup/ios/" target="_blank" rel="noopener noreferrer">Cloudflare's official iOS setup guide</a> · <a href="https://developer.apple.com/documentation/devicemanagement/dnssettings" target="_blank" rel="noopener noreferrer">Apple DNS settings documentation</a></p>
+  </section>
+</main>
+<footer>NEXUS DNS · Profile files are generated locally in your browser.</footer>
+<script>
+const endpoints = {
+  standard: "https://cloudflare-dns.com/dns-query",
+  security: "https://security.cloudflare-dns.com/dns-query",
+  family: "https://family.cloudflare-dns.com/dns-query"
+};
+function uuid() {
+  if (crypto.randomUUID) return crypto.randomUUID().toUpperCase();
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
+    const r = Math.random()*16|0;
+    return (c === "x" ? r : (r&3|8)).toString(16);
+  }).toUpperCase();
+}
+function xml(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&apos;");
+}
+function plistString(value) { return "<string>"+xml(value)+"</string>"; }
+function makeProfile(displayName, serverURL) {
+  const rootID = uuid(), dnsID = uuid();
+  const rootIdentifier = "com.nexusdns.profile." + rootID.toLowerCase();
+  const dnsIdentifier = "com.nexusdns.dns." + dnsID.toLowerCase();
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>PayloadContent</key>
+  <array>
+    <dict>
+      <key>PayloadType</key><string>com.apple.dnsSettings.managed</string>
+      <key>PayloadVersion</key><integer>1</integer>
+      <key>PayloadIdentifier</key>${plistString(dnsIdentifier)}
+      <key>PayloadUUID</key>${plistString(dnsID)}
+      <key>PayloadDisplayName</key>${plistString(displayName)}
+      <key>PayloadDescription</key><string>Encrypted DNS-over-HTTPS using the selected Cloudflare resolver.</string>
+      <key>DNSSettings</key>
+      <dict>
+        <key>DNSProtocol</key><string>HTTPS</string>
+        <key>ServerURL</key>${plistString(serverURL)}
+      </dict>
+    </dict>
+  </array>
+  <key>PayloadDisplayName</key>${plistString(displayName)}
+  <key>PayloadIdentifier</key>${plistString(rootIdentifier)}
+  <key>PayloadRemovalDisallowed</key><false/>
+  <key>PayloadType</key><string>Configuration</string>
+  <key>PayloadUUID</key>${plistString(rootID)}
+  <key>PayloadVersion</key><integer>1</integer>
+</dict>
+</plist>`;
+}
+document.getElementById("generate").addEventListener("click", () => {
+  const mode = document.getElementById("mode").value;
+  const name = document.getElementById("label").value.trim() || "Nexus DNS - Cloudflare";
+  const endpoint = endpoints[mode];
+  const status = document.getElementById("status");
+  try {
+    const profile = makeProfile(name, endpoint);
+    const blob = new Blob([profile], {type:"application/x-apple-aspen-config"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "Nexus-Cloudflare-DNS.mobileconfig";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+    status.textContent = "Profile file generated.\nResolver: " + endpoint +
+      "\nNext: open the downloaded .mobileconfig file and review/install it in iOS Settings.\n\nIf iOS rejects the profile, remove the file and use Cloudflare's official app or manual Wi-Fi setup. Do not install profiles from sources you do not trust.";
+  } catch (e) {
+    status.textContent = "Could not create profile: " + e.message;
+  }
+});
+</script>
+</body>
+</html>
